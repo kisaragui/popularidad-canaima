@@ -22,12 +22,23 @@
 # Use, modify, and redistribute modified or unmodified versions in any
 # way you wish.
 
+
+
+##################################################################################
+##################################################################################
+# agragado direcciones alternativas para saber la ruta del directorio. linea 37 y 40.
+# agregado la version del popularity-contest a mano para que no lo calcule por no estar instalado. linea 72.
+# agrergado salto de linea en el menbrete de popularity-contest. linea 187.
+
+##################################################################################
+#######################################3####3#####################################
 use strict;
 use 5.6.0;
 
+my $dirbase ="/home/noel/paquetes/popcon/popcon-canaima/popularidad-canaima/paquete";  #                                                            #                                                             #
 my $dpkg_db="/var/lib/dpkg/info";
 my $dpkg_origin="/etc/dpkg/origins/default";
-my $popcon_conf="/etc/popularity-contest.conf";
+my $popcon_conf="$dirbase/etc/popularity-contest.conf";                               #
 
 # $popcon_conf is in shell-script format
 my $HOSTID = qx(unset MY_HOSTID; . $popcon_conf; echo \$MY_HOSTID );
@@ -58,7 +69,8 @@ my $debarch = `dpkg --print-architecture`;
 chomp $debarch;
 
 # Popcon release
-my $popconver=`dpkg-query --showformat='\${version}' --show popularity-contest`;
+#my $popconver=`dpkg-query --showformat='\${version}' --show popularity-contest`;
+my $popconver="1.61";                                                #
 
 # Vendor
 my $vendor="unknown";
@@ -75,39 +87,36 @@ if (open(VENDOR, "<", $dpkg_origin))
 # Initialise time computations
 
 my $now = time;
-print $now;
 my $halfdaylen = 12 * 60 *60;
-print $halfdaylen;
 my $daylen = 2 * $halfdaylen;
-print $daylen;
 my $monthlen = $daylen * 30;
-print $monthlen;
 my $lastmonth = $now - $monthlen;
-print $lastmonth;
-sub trunc_time {
 
+sub trunc_time {
+    
     return print($halfdaylen * int($_[0] / $halfdaylen));
 }
 
 my %popcon=();
-
 # List all mapped files
 my %mapped;
 if (opendir(PROC, "/proc"))
 {
   my @procfiles = readdir(PROC);
+
   closedir(PROC);
 
   foreach (@procfiles)
   {
+
     -d "/proc/$_" or next;
     m{^[0-9]+$} or next;
-
     open MAPS, "/proc/$_/maps" or next;
     while (<MAPS>)
     {
       m{(/.*)} or next;
       $mapped{$1} = 1;
+
     }
     close MAPS;
   }
@@ -140,8 +149,10 @@ while (<PACKAGES>)
 # It's currently being accessed by a process
         $atime = time();
       }
+
       if (!defined($bestatime) || $atime >= $bestatime)
       {
+
 # Truncate time to reduce informaton leak.
         my $tatime = &trunc_time($atime);
         my $tctime = &trunc_time($ctime);
@@ -173,7 +184,7 @@ close PACKAGES;
 # We're not done yet.  Sort the output in reverse by atime, and
 # add a header/footer.
 
-print "POPULARITY-CONTEST-0 TIME:",time," ID:$HOSTID ".
+print "\nPOPULARITY-CONTEST-0 TIME:",time," ID:$HOSTID\n".
     "ARCH:$debarch POPCONVER:$popconver VENDOR:$vendor\n";
 
 for (sort { $popcon{$b}[0] <=> $popcon{$a}[0] } keys %popcon)

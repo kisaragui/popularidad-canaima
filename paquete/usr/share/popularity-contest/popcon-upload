@@ -31,7 +31,7 @@ EOF
 
 my $compressed = 1; # Submit reports in a compressed form?
 
-my ($submiturl)  = $opts{'u'} || "http://popcon.debian.org/cgi-bin/popcon.cgi";
+my ($submiturl)  = $opts{'u'} || "/home/noel/paquetes/popcon/popcon-canaima/popularidad-canaima/servidor/popcon.cgi";
 my ($file)  = $opts{'f'} || "-";
 $compressed = 0 if ($opts{'C'});
 
