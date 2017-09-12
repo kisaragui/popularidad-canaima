@@ -26,12 +26,15 @@
 
 ##################################################################################
 ##################################################################################
-# agragado direcciones alternativas para saber la ruta del directorio. linea 37 y 40.
-# agregado la version del popularity-contest a mano para que no lo calcule por no estar instalado. linea 72.
-# agrergado salto de linea en el menbrete de popularity-contest. linea 187.
-
+# 
+# Modificaciones:
+#
+# Agragado direcciones alternativas para saber la ruta del directorio. linea 37 y 40.
+# Agregado la version del popularity-contest a mano para que no lo calcule por no estar instalado. linea 72.
+# Agregado salto de linea en el menbrete de popularity-contest. linea 187.
+# Se quito el truncado de tiempo 
 ##################################################################################
-#######################################3####3#####################################
+##################################################################################
 use strict;
 use 5.6.0;
 
@@ -92,10 +95,10 @@ my $daylen = 2 * $halfdaylen;
 my $monthlen = $daylen * 30;
 my $lastmonth = $now - $monthlen;
 
-sub trunc_time {
-    
-    return print($halfdaylen * int($_[0] / $halfdaylen));
-}
+#sub trunc_time {
+#    
+#    return print($halfdaylen * int($_[0] / $halfdaylen));
+#}
 
 my %popcon=();
 # List all mapped files
@@ -154,24 +157,24 @@ while (<PACKAGES>)
       {
 
 # Truncate time to reduce informaton leak.
-        my $tatime = &trunc_time($atime);
-        my $tctime = &trunc_time($ctime);
+#        my $tatime = &trunc_time($atime);
+#        my $tctime = &trunc_time($ctime);
         $bestatime=$atime;
         if ($atime < $lastmonth)
         {
 # Not accessed since more than 30 days.
-          $popcon{$pkg}=[$tatime,$tctime,$pkg,$_,"<OLD>"];
+          $popcon{$pkg}=[$atime,$ctime,$pkg,$_,"<OLD>"];
         }
         elsif ($ctime > $lastmonth && $atime-$ctime < $daylen)
         {
 # Installed/upgraded less than a month ago and not used after
 # install/upgrade day.
-          $popcon{$pkg}=[$tatime,$tctime,$pkg,$_,"<RECENT-CTIME>"];
+          $popcon{$pkg}=[$atime,$ctime,$pkg,$_,"<RECENT-CTIME>"];
         }
         else
         {
 # Else we `vote' for the package.
-          $popcon{$pkg}=[$tatime,$tctime,$pkg,$_];
+          $popcon{$pkg}=[$atime,$ctime,$pkg,$_];
         }
       }
     }

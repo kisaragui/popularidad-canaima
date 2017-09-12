@@ -3,7 +3,8 @@
 # Author: Yann Dirson <dirson@debian.org>
 # License: GPL
 
-datafile=/var/log/popularity-contest
+
+datafile=/home/noel/paquetes/popcon/popcon-canaima/popularidad-canaima/paquete/var/log/popularity-contest
 
 if [ ! -e $datafile ] ; then
     echo "warning: Missing required file $datafile."

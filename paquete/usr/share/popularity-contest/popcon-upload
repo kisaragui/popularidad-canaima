@@ -31,12 +31,11 @@ EOF
 
 my $compressed = 1; # Submit reports in a compressed form?
 
-my ($submiturl)  = $opts{'u'} || "/home/noel/paquetes/popcon/popcon-canaima/popularidad-canaima/servidor/popcon.cgi";
+my ($submiturl)  = $opts{'u'} || "http://localhost/cgi-bin/popcon.cgi";
 my ($file)  = $opts{'f'} || "-";
 $compressed = 0 if ($opts{'C'});
 
 my ($host) = $submiturl =~ m%http://([^/]+)%;
-
 print "Unable to parse url\n" if ($opts{'d'} && ! $host);
 
 # Configure the proxy:
@@ -45,7 +44,7 @@ my ($http_proxy,$proxy,$port,$remote);
 $http_proxy=$ENV{'http_proxy'};
 if (defined($http_proxy))
 {
-  $http_proxy =~ m{http://([^:]*)(?::([0-9]+))?} 
+  $http_proxy =~ m{http://([^:]*)(?::([0-9]+))?}
         or die ("unrecognized http_proxy");
   $proxy=$1; $port=$2;
 }
@@ -63,7 +62,9 @@ if ($compressed) {
     open FILE, "< $file" or die "reading from '$file'";
     $encoding = "identity";
 }
-$str .= $_ while(<FILE>); 
+
+$str .= $_ while(<FILE>);
+
 close(FILE);
 $len = length($str);
 
@@ -72,9 +73,9 @@ $SIG{ALRM} = sub { die "timeout in popcon-upload\n" };
 alarm(30);
 
 # Connect to server
-$remote = IO::Socket::IP->new(Proto => "tcp", PeerAddr => $proxy, 
-                                              PeerPort => $port); 
-unless ($remote) { die "cannot connect to $proxy:$port" }
+$remote = IO::Socket::IP->new(Proto => "tcp", PeerAddr => $proxy,
+                                              PeerPort => $port);
+unless ($remote) { die "cannot connect to $proxy:$port" };
 
 my $boundary = "----------ThIs_Is_tHe_bouNdaRY_\$";
 
@@ -105,11 +106,15 @@ print $remote "$form";
 my($answer)="";
 while(<$remote>)
 {
-  $answer.=$_;
+  $answer= $_;
+  print "$answer" if ($opts{'d'});
   m/DEBIAN POPCON HTTP-POST OK/ and last;
 }
 close ($remote);
+
 #Check answer
 my $status = ($answer =~ m/DEBIAN POPCON HTTP-POST OK/) ? 0 : 1;
+print "$status\n";
 print "Failed to upload, answer '$answer'\n" if $status && $opts{'d'};
 exit $status;
+

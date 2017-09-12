@@ -19,6 +19,7 @@ unset MTAOPS
 . $dirbase/usr/share/popularity-contest/default.conf
 . $dirbase/etc/popularity-contest.conf
 
+
 if test -d /etc/popularity-contest.d/; then
   for file in `run-parts --list --regex '\.conf$' /etc/popularity-contest.d/`;
   do
@@ -45,7 +46,7 @@ if [ "$DAY" ] && [ "$DAY" != "$(date +%w)" ] ; then
 		now=$(date +%s)
 		lastrun=$(date -r $POPCON +%s)
 		# 6.5 days, in seconds
-		week=561600
+		week=1
 		if [ "$(( $now - $lastrun ))" -le "$week" ]; then
 			exit 0
 		fi
@@ -53,18 +54,23 @@ if [ "$DAY" ] && [ "$DAY" != "$(date +%w)" ] ; then
 fi
 
 # keep old logs
+
 cd $dirbase/var/log
-umask 022
+umask 002
 savelog -c 7 popularity-contest >/dev/null
 
 run_popcon()
-{
+{	
+	
 	su -s /bin/sh -c "$dirbase/usr/sbin/popularity-contest" nobody
 }
 
 do_sendmail()
 {
+	echo "pasando por send mail"
 	if [ -n "$MAILFROM" ]; then
+		echo $MTAOPS
+		echo "sendmail -oi $MTAOPS -f $MAILFROM $MAILTO"
 		sendmail -oi $MTAOPS -f "$MAILFROM" $MAILTO
 	else
 		sendmail -oi $MTAOPS $MAILTO
@@ -72,8 +78,8 @@ do_sendmail()
 }
 
 # generate the popularity contest data
-
 run_popcon > $POPCON
+
 GPG=/usr/bin/gpg
 
 if [ "$ENCRYPT" = "yes" ] && ! [ -x "$GPG" ]; then
@@ -96,14 +102,14 @@ if [ -x "$GPG" ] && [ "$ENCRYPT" = "maybe" ] || [ "$ENCRYPT" = "yes" ]; then
 fi
 
 SUBMITTED=no
-echo " pasara por aca"
 # try to post the report through http POST
 if [ "$SUBMITURLS" ] && [ "yes" = "$USEHTTP" ]; then
-    for URL in $SUBMITURLS ; do
-	if setsid /usr/share/popularity-contest/popcon-upload \
-	    -u $URL -f $POPCON 2>/dev/null ; then
+    for URL in $SUBMITURLS; do
+	if setsid $dirbase/usr/share/popularity-contest/popcon-upload -d\
+	    -u $URL -f $POPCON; then
 		SUBMITTED=yes
 	else
+	
 		logger -t popularity-contest "unable to submit report to $URL."
 	fi
     done
